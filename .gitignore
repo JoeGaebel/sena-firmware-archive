@@ -28,4 +28,3 @@ website/.env.production
 
 # jetbrains setting folder
 .idea/
-*.img
