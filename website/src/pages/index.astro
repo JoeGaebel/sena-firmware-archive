@@ -10,9 +10,8 @@ const readmeContent = readFileSync(readmePath, 'utf-8');
 const parts = readmeContent.split(/<!-- SPLIT: .+ -->/);
 const section1Html = marked(parts[0] || ''); // Title + Background
 const section2Html = marked(parts[1] || ''); // How to Downgrade
-const section3Html = marked(parts[2] || ''); // Dev Notes, Thanks, Disclaimer
 
-const pageTitle = "Sena Firmware Downgrade - Fix Broken Sena 50S After Update";
+const pageTitle = "Sena Firmware Downgrade - Fix Broken Sena After Update";
 const pageDescription = "Sena broken after firmware update? Download old firmware versions and Device Manager to downgrade your Sena 50S, 50R, or R1 EVO and fix pairing, mesh, and music sharing issues.";
 
 // Scan firmware directory
@@ -45,8 +44,8 @@ const githubRepo = "https://github.com/joegaebel/sena-firmware-archive";
 // - Buy Me a Coffee: https://www.buymeacoffee.com/yourusername
 // - Ko-fi: https://ko-fi.com/yourusername
 // - PayPal: https://www.paypal.me/yourusername
-const donationLink = "https://paypal.me/joegaebel";
-const donationService = "Support via PayPal";
+const donationLink = "https://buymeacoffee.com/joegaebel";
+const donationService = "Thanks, Joe!";
 ---
 
 <!DOCTYPE html>
