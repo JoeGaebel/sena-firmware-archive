@@ -1,0 +1,555 @@
+---
+import { readFileSync, readdirSync, statSync } from 'fs';
+import { join } from 'path';
+import { marked } from 'marked';
+
+const readmePath = join(process.cwd(), '../README.md');
+const readmeContent = readFileSync(readmePath, 'utf-8');
+
+// Split README on HTML comment markers
+const parts = readmeContent.split(/<!-- SPLIT: .+ -->/);
+const section1Html = marked(parts[0] || ''); // Title + Background
+const section2Html = marked(parts[1] || ''); // How to Downgrade
+const section3Html = marked(parts[2] || ''); // Dev Notes, Thanks, Disclaimer
+
+const pageTitle = "Sena Firmware Downgrade - Fix Broken Sena 50S After Update";
+const pageDescription = "Sena broken after firmware update? Download old firmware versions and Device Manager to downgrade your Sena 50S, 50R, or R1 EVO and fix pairing, mesh, and music sharing issues.";
+
+// Scan firmware directory
+function scanDirectory(dirPath: string) {
+  const items: any = {};
+  try {
+    const entries = readdirSync(dirPath);
+    for (const entry of entries) {
+      const fullPath = join(dirPath, entry);
+      const stat = statSync(fullPath);
+      if (stat.isDirectory()) {
+        items[entry] = scanDirectory(fullPath);
+      } else {
+        if (!items._files) items._files = [];
+        items._files.push(entry);
+      }
+    }
+  } catch (e) {
+    console.error(`Error scanning ${dirPath}:`, e);
+  }
+  return items;
+}
+
+const firmwareTree = scanDirectory(join(process.cwd(), '../firmware'));
+const installersTree = scanDirectory(join(process.cwd(), '../installers'));
+
+const githubRepo = "https://github.com/joegaebel/sena-firmware-archive";
+
+// Configure your donation link here:
+// - Buy Me a Coffee: https://www.buymeacoffee.com/yourusername
+// - Ko-fi: https://ko-fi.com/yourusername
+// - PayPal: https://www.paypal.me/yourusername
+const donationLink = "https://paypal.me/joegaebel";
+const donationService = "Support via PayPal";
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={pageDescription} />
+  <meta name="keywords" content="Sena firmware downgrade, Sena broken after update, Sena 50S firmware, download old Sena firmware, Sena Device Manager, Sena stopped working, Sena pairing problems, Sena mesh problems, fix Sena music sharing, Sena bluetooth, motorcycle intercom, helmet communication" />
+  <meta name="author" content="Joe Gaebel" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={pageDescription} />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={pageTitle} />
+  <meta name="twitter:description" content={pageDescription} />
+
+  <title>{pageTitle}</title>
+
+  <!-- Schema.org structured data -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Sena Firmware Archive",
+      "applicationCategory": "UtilitiesApplication",
+      "description": "Archive of Sena firmware versions and Device Manager installers for downgrading Sena Bluetooth communication devices",
+      "operatingSystem": "Windows, macOS",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "reviewCount": "1"
+      }
+    }
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "How to Downgrade Sena Firmware",
+      "description": "Step-by-step guide to downgrade Sena 50S, 50R, or R1 EVO firmware to fix issues caused by updates",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Download old Device Manager",
+          "text": "Download an older version of Sena Device Manager that allows firmware downgrading"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Download old firmware",
+          "text": "Download the older firmware version you want to install on your Sena device"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Install and downgrade",
+          "text": "Install the old Device Manager and use it to downgrade your Sena firmware"
+        }
+      ]
+    }
+  </script>
+
+  <style is:global>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      background: #f5f5f5;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .content {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      max-width: 100%;
+      box-sizing: border-box;
+      margin-top: 20px;
+    }
+
+    .content:first-child {
+      margin-top: 0;
+    }
+
+    .content * {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .content h1 {
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+
+    .content h2 {
+      color: #764ba2;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .content h3 {
+      color: #667eea;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    .content img,
+    .content p img,
+    img {
+      max-width: 100% !important;
+      width: auto !important;
+      height: auto !important;
+      display: block !important;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin: 15px auto !important;
+      object-fit: contain !important;
+    }
+
+    .content p {
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    .content a {
+      color: #667eea;
+      text-decoration: none;
+    }
+
+    .content a:hover {
+      text-decoration: underline;
+    }
+
+    .content code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Monaco', 'Courier New', monospace;
+    }
+
+    .content pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+
+    .content pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .content ul, .content ol {
+      margin-left: 25px;
+      margin-bottom: 15px;
+    }
+
+    .content li {
+      margin-bottom: 8px;
+    }
+
+    .content p {
+      margin-bottom: 15px;
+    }
+
+    .content blockquote {
+      border-left: 4px solid #667eea;
+      padding-left: 15px;
+      margin: 15px 0;
+      color: #666;
+    }
+
+    .file-tree {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    .file-tree h2 {
+      color: #667eea;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .tree-section {
+      margin-bottom: 30px;
+    }
+
+    .tree-section h3 {
+      color: #764ba2;
+      margin-bottom: 15px;
+      cursor: pointer;
+      user-select: none;
+      padding: 10px 15px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+
+    .tree-section h3:hover {
+      background: #e9ecef;
+    }
+
+    .tree-section h3:before {
+      content: "▶ ";
+      display: inline-block;
+      margin-right: 8px;
+      transition: transform 0.2s;
+    }
+
+    .tree-section h3.expanded:before {
+      transform: rotate(90deg);
+    }
+
+    .tree-section-content {
+      display: none;
+      margin-top: 15px;
+    }
+
+    .tree-section-content.expanded {
+      display: block;
+    }
+
+    .model-search {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 0.95em;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      transition: border-color 0.2s;
+    }
+
+    .model-search:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .model-search::placeholder {
+      color: #999;
+    }
+
+    .firmware-list {
+      /* Container for firmware folders */
+    }
+
+    .tree-folder {
+      margin-left: 0;
+      margin-bottom: 10px;
+    }
+
+    .tree-folder-name {
+      font-weight: 600;
+      color: #667eea;
+      margin-bottom: 8px;
+      display: block;
+      cursor: pointer;
+      user-select: none;
+      padding: 8px 12px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .tree-folder-name:hover {
+      background: #e9ecef;
+    }
+
+    .tree-folder-name:before {
+      content: "▶ ";
+      display: inline-block;
+      margin-right: 5px;
+      transition: transform 0.2s;
+    }
+
+    .tree-folder-name.expanded:before {
+      transform: rotate(90deg);
+    }
+
+    .tree-files {
+      list-style: none;
+      margin-left: 20px;
+      padding-left: 15px;
+      border-left: 2px solid #e0e0e0;
+      display: none;
+      margin-top: 8px;
+    }
+
+    .tree-files.expanded {
+      display: block;
+    }
+
+    .tree-files li {
+      margin-bottom: 5px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    .tree-files a {
+      color: #333;
+      text-decoration: none;
+      padding: 2px 0;
+      display: inline-block;
+    }
+
+    .tree-files a:hover {
+      color: #667eea;
+      text-decoration: underline;
+    }
+
+    .tree-files li:before {
+      content: "📄 ";
+      margin-right: 5px;
+    }
+
+    .donation-section {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .donation-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #FFDD00 0%, #FBB034 100%);
+      color: #000;
+      padding: 12px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1em;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-top: 10px;
+    }
+
+    .donation-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .donation-button:before {
+      content: "☕ ";
+      font-size: 1.2em;
+    }
+
+    .donation-text {
+      color: #666;
+      margin-bottom: 15px;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Section 1: Title and Background -->
+    <div class="content">
+      <Fragment set:html={section1Html} />
+    </div>
+
+    <!-- Section 2: Available Files -->
+    <div class="file-tree">
+      <h2>Available Files</h2>
+
+      <div class="tree-section">
+        <h3 class="section-toggle">Installers</h3>
+        <div class="tree-section-content">
+          {installersTree._files && (
+            <ul class="tree-files expanded" style="margin-left: 0;">
+              {installersTree._files.map((file: string) => (
+                <li>
+                  <a href={`${githubRepo}/raw/main/installers/${file}`} download>
+                    {file}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      <div class="tree-section">
+        <h3 class="section-toggle">Firmware</h3>
+        <div class="tree-section-content">
+          <input
+            type="text"
+            class="model-search"
+            placeholder="Search models (e.g., 50S, R1, 20S)..."
+          />
+          <div class="firmware-list">
+            {Object.keys(firmwareTree).map(device => (
+              <div class="tree-folder" data-model={device.toLowerCase()}>
+                <span class="tree-folder-name folder-toggle">📁 {device}</span>
+                {firmwareTree[device]._files && (
+                  <ul class="tree-files">
+                    {firmwareTree[device]._files.map((file: string) => (
+                      <li>
+                        <a href={`${githubRepo}/raw/main/firmware/${device}/${file}`} download>
+                          {file}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: How to Downgrade (includes Important Notes, Dev Notes, Thanks, Disclaimer) -->
+    <div class="content">
+      <Fragment set:html={section2Html} />
+    </div>
+
+    <!-- Section 4: Donation -->
+    <div class="donation-section">
+      <p class="donation-text">If this archive helped you, consider buying me a coffee!</p>
+      <a href={donationLink} target="_blank" rel="noopener noreferrer" class="donation-button">
+        {donationService}
+      </a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Handle section toggles (Firmware, Installers)
+      document.querySelectorAll('.section-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+          toggle.classList.toggle('expanded');
+          const content = toggle.nextElementSibling;
+          if (content) {
+            content.classList.toggle('expanded');
+          }
+        });
+      });
+
+      // Handle folder toggles (50S, 50R, etc.)
+      document.querySelectorAll('.folder-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+          toggle.classList.toggle('expanded');
+          const fileList = toggle.nextElementSibling;
+          if (fileList) {
+            fileList.classList.toggle('expanded');
+          }
+        });
+      });
+
+      // Handle model search filtering
+      const searchInput = document.querySelector('.model-search');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          const searchTerm = e.target.value.toLowerCase().trim();
+          const modelFolders = document.querySelectorAll('.tree-folder[data-model]');
+
+          modelFolders.forEach(folder => {
+            const modelName = folder.getAttribute('data-model');
+            // Loose match - check if search term is anywhere in model name
+            if (modelName.includes(searchTerm)) {
+              folder.style.display = '';
+            } else {
+              folder.style.display = 'none';
+            }
+          });
+        });
+      }
+    });
+  </script>
+</body>
+</html>
