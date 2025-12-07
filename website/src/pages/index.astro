@@ -433,6 +433,21 @@ const donationService = "Support via PayPal";
       margin-bottom: 15px;
       font-size: 1em;
     }
+
+    .site-footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .site-footer a {
+      color: #667eea;
+      text-decoration: none;
+    }
+
+    .site-footer a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -505,6 +520,11 @@ const donationService = "Support via PayPal";
         {donationService}
       </a>
     </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <a href={githubRepo} target="_blank" rel="noopener noreferrer">View on GitHub</a>
+    </footer>
   </div>
 
   <script>
