@@ -128,7 +128,7 @@ get_counter() {
     cat "$1" 2>/dev/null || echo "0"
 }
 
-# Function to download firmware file
+# Function to download firmware file with retry
 download_firmware() {
     local url=$1
     local device=$2
@@ -141,14 +141,32 @@ download_firmware() {
     local filename=$(basename "$url")
     local filepath="${device_dir}/${filename}"
 
-    # Download the file
+    # Skip if file already exists
+    if [ -f "$filepath" ]; then
+        echo "  ⊙ Already exists: $filepath"
+        return 0
+    fi
+
+    # Try to download the file (first attempt)
     if curl -s -o "$filepath" --max-time 60 "$url" 2>/dev/null; then
         echo "  → Downloaded to $filepath"
         return 0
-    else
-        echo "  ✗ Download failed for $url"
-        return 1
     fi
+
+    # First attempt failed, retry once
+    echo "  ⟳ Retrying download for $url"
+    if curl -s -o "$filepath" --max-time 60 "$url" 2>/dev/null; then
+        echo "  → Downloaded to $filepath (retry succeeded)"
+        return 0
+    fi
+
+    # Both attempts failed, log to failed-to-download.txt
+    echo "  ✗ Download failed (2 attempts) for $url"
+    echo "$url" >> "failed-to-download.txt"
+
+    # Remove partial/empty file if it exists
+    rm -f "$filepath"
+    return 1
 }
 
 # Function to generate version strings from 1.0 to max version
@@ -470,10 +488,6 @@ process_firmware_list() {
                 fi
             done
         fi
-
-        echo ""
-        echo "Summary:"
-        cat "$OUTPUT_FILE" | sort
     else
         echo "No firmware files found."
     fi
